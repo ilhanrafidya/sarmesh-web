@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SAR-Mesh. Tetap terhubung, saat sinyal hilang.</title>
+<meta name="description" content="SAR-Mesh: sistem komunikasi darurat berbasis LoRa mesh 433 MHz untuk tim SAR. Kelompok 43, Desain Proyek 2, Fakultas Teknik Universitas Indonesia.">
+<meta property="og:title" content="SAR-Mesh.">
+<meta property="og:description" content="Tetap terhubung, saat sinyal hilang. Jaringan LoRa mesh 433 MHz untuk tim SAR.">
+<meta property="og:image" content="/assets/og.jpg">
+<meta name="theme-color" content="#000000">
+<link rel="preload" href="/assets/hero.webp" as="image">
+<link rel="stylesheet" href="/style.css">
+<script type="importmap">
+{ "imports": {
+  "three": "/vendor/three/three.module.js",
+  "three/addons/": "/vendor/three/addons/"
+} }
+</script>
+</head>
+<body>
+
+<nav class="nav" id="nav">
+  <div class="nav-in">
+    <a href="#top" class="brand">SAR-Mesh</a>
+    <div class="links">
+      <a href="#masalah">Ikhtisar</a>
+      <a href="#lihat">3D</a>
+      <a href="#cara">Cara kerja</a>
+      <a href="#fitur">Fitur</a>
+      <a href="#tim">Tim</a>
+    </div>
+    <a href="#lihat" class="pill">Lihat 3D</a>
+  </div>
+</nav>
+
+<header class="hero" id="top">
+  <p class="eyebrow reveal">Jaringan LoRa Mesh 433 MHz</p>
+  <h1 class="hero-title reveal">SAR-Mesh.</h1>
+  <p class="hero-tag reveal">Tetap terhubung, saat sinyal hilang.</p>
+  <div class="hero-cta reveal">
+    <a class="btn" href="#lihat">Jelajahi dalam 3D</a>
+    <a class="lnk" href="#cara">Cara kerjanya &rsaquo;</a>
+  </div>
+  <div class="hero-img reveal">
+    <img src="/assets/hero.webp" srcset="/assets/hero-sm.webp 1200w, /assets/hero.webp 2400w" sizes="(max-width: 800px) 100vw, 1200px" alt="Relay Node, Field Node, dan Command Node SAR-Mesh">
+  </div>
+  <div class="hero-names reveal"><span>Relay</span><span>Field</span><span>Command</span></div>
+</header>
+
+<section class="block" id="masalah">
+  <p class="eyebrow reveal">Masalahnya</p>
+  <h2 class="big reveal">Saat bencana,<br><span class="dim">sinyal ikut hilang.</span></h2>
+  <p class="lead reveal">Dalam operasi pencarian dan penyelamatan, komunikasi sering terhambat karena jaringan seluler terbatas atau rusak, terutama di wilayah terpencil dan terdampak bencana. Padahal tim di lapangan dan posko harus tetap tahu di mana setiap personel berada.</p>
+</section>
+
+<section class="block" id="apa">
+  <p class="eyebrow reveal">Apa itu SAR-Mesh</p>
+  <h2 class="big reveal">Komunikasi<br><span class="grad">tanpa internet.</span></h2>
+  <p class="lead reveal">SAR-Mesh adalah sistem komunikasi darurat berbasis LoRa 433 MHz. Pesan dan lokasi personel dikirim dari node ke node hingga sampai di posko, tanpa bergantung pada internet maupun jaringan seluler.</p>
+</section>
+
+<section class="viewer-sec" id="lihat">
+  <div class="viewer-head">
+    <p class="eyebrow reveal">Lihat lebih dekat</p>
+    <h2 class="mid reveal">Bongkar setiap node.</h2>
+    <p class="sub reveal">Putar, perbesar, lalu buka untuk melihat isinya. Klik komponen untuk keterangannya.</p>
+  </div>
+
+  <div class="viewer reveal" id="viewer">
+    <canvas id="c3d"></canvas>
+    <div class="loader" id="loader"><div class="bar"><i id="loadbar"></i></div><span>Memuat model 3D</span></div>
+
+    <div class="seg" id="seg" role="tablist">
+      <span class="seg-ind" id="segInd"></span>
+      <button data-node="RELAY" role="tab">Relay</button>
+      <button data-node="FIELD" role="tab" class="on">Field</button>
+      <button data-node="COMMAND" role="tab">Command</button>
+    </div>
+
+    <div class="node-info" id="nodeInfo">
+      <h3 id="niTitle">Field Node</h3>
+      <p id="niText">Dibawa petugas di lapangan. Mengirim posisi GPS dan pesan status.</p>
+    </div>
+
+    <div class="card" id="card" aria-live="polite">
+      <button class="card-x" id="cardX" aria-label="Tutup">&times;</button>
+      <p class="card-k" id="cardK">Komponen</p>
+      <h4 id="cardT"></h4>
+      <p id="cardD"></p>
+    </div>
+
+    <div class="controls">
+      <button class="explode" id="btnExplode"><span class="ico"></span><span id="btnLabel">Buka</span></button>
+      <button class="ghost" id="btnReset" aria-label="Atur ulang tampilan">Reset</button>
+    </div>
+    <p class="hint" id="hint">Seret untuk memutar · scroll atau cubit untuk zoom</p>
+  </div>
+</section>
+
+<section class="block" id="cara">
+  <p class="eyebrow reveal">Cara kerja</p>
+  <h2 class="big reveal">Tiga node.<br><span class="dim">Satu jaringan.</span></h2>
+  <div class="flow reveal">
+    <div class="step"><span class="num">01</span><h3>Field Node</h3><p>Dibawa petugas di lapangan. Mengirim posisi GPS dan pesan status lewat tiga tombol.</p></div>
+    <div class="arrow" aria-hidden="true"><i></i></div>
+    <div class="step"><span class="num">02</span><h3>Relay Node</h3><p>Meneruskan paket dari node ke node untuk memperluas jangkauan jaringan.</p></div>
+    <div class="arrow" aria-hidden="true"><i></i></div>
+    <div class="step"><span class="num">03</span><h3>Command Node</h3><p>Di posko. Menerima data lalu meneruskannya ke laptop untuk dipantau.</p></div>
+  </div>
+</section>
+
+<section class="block" id="fitur">
+  <p class="eyebrow reveal">Fitur</p>
+  <h2 class="big reveal">Dirancang untuk<br><span class="grad">respons darurat.</span></h2>
+  <div class="tiles">
+    <div class="tile reveal"><div class="ti">⌖</div><h3>Informasi lokasi</h3><p>Modul GPS NEO-6M mengirim koordinat setiap personel ke posko.</p></div>
+    <div class="tile reveal"><div class="ti">●●●</div><h3>Pesan status cepat</h3><p>Tiga tombol: Aman, Bantuan, dan Area Bersih. Satu tekan, langsung terkirim.</p></div>
+    <div class="tile reveal"><div class="ti">⇄</div><h3>Penerusan antar node</h3><p>Relay Node meneruskan paket sehingga cakupan tim makin luas.</p></div>
+    <div class="tile reveal"><div class="ti">⏻</div><h3>Daya mandiri</h3><p>Baterai 18650 dengan pengisian USB-C lewat modul TP4056.</p></div>
+  </div>
+</section>
+
+<section class="block" id="spek">
+  <p class="eyebrow reveal">Di dalamnya</p>
+  <h2 class="mid reveal">Komponen utama.</h2>
+  <div class="spec reveal">
+    <div class="col">
+      <h3>Field Node</h3>
+      <ul>
+        <li><b>Mikrokontroler</b><span>ESP32 DevKit</span></li>
+        <li><b>Radio</b><span>LoRa Ra-02 (SX1278), 433 MHz</span></li>
+        <li><b>Posisi</b><span>GPS GY-GPS6MV2 (u-blox NEO-6M)</span></li>
+        <li><b>Layar</b><span>OLED 0,96" SSD1306</span></li>
+        <li><b>Input</b><span>3 push button</span></li>
+        <li><b>Daya</b><span>18650 Li-ion + TP4056 USB-C</span></li>
+        <li><b>Casing</b><span>Cetak 3D</span></li>
+      </ul>
+    </div>
+    <div class="col">
+      <h3>Relay &amp; Command Node</h3>
+      <ul>
+        <li><b>Mikrokontroler</b><span>ESP32 DevKit</span></li>
+        <li><b>Radio</b><span>LoRa Ra-02 (SX1278), 433 MHz</span></li>
+        <li><b>Antena</b><span>Spring IPEX 433 MHz</span></li>
+        <li><b>Papan</b><span>PCB matrix</span></li>
+        <li><b>Casing</b><span>Box ABS hitam</span></li>
+        <li><b>Command</b><span>Terhubung ke laptop lewat USB</span></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="block" id="video">
+  <p class="eyebrow reveal">Video demonstrasi</p>
+  <div class="video reveal"><div class="play"></div><p>Segera hadir</p></div>
+</section>
+
+<section class="block" id="tim">
+  <p class="eyebrow reveal">Tim</p>
+  <h2 class="mid reveal">Kelompok 43.</h2>
+  <ul class="team reveal">
+    <li>Cynthia Felita Pakpahan</li>
+    <li>Ruben Kristanto</li>
+    <li>Abdallah Raffael Omari</li>
+    <li>Ilhan Rafidya Khalid</li>
+    <li>Kelvin Ferrell Tjoe</li>
+  </ul>
+  <p class="advisor reveal">Dosen Pembimbing<br><b>Prof. Dr. Ir. Dadang Gunawan, M.Eng.</b></p>
+</section>
+
+<footer class="foot">
+  <p>SAR-Mesh · Desain Proyek 2</p>
+  <p>Teknik Elektro &amp; Teknik Komputer · Fakultas Teknik, Universitas Indonesia · 2026</p>
+</footer>
+
+<script type="module" src="/main.js"></script>
+</body>
+</html>
