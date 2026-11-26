@@ -8,9 +8,12 @@
 <meta property="og:title" content="SAR-Mesh.">
 <meta property="og:description" content="Tetap terhubung, saat sinyal hilang. Jaringan LoRa mesh 433 MHz untuk tim SAR.">
 <meta property="og:image" content="/assets/og.jpg">
-<meta name="theme-color" content="#000000">
+<meta name="theme-color" content="#231815">
 <link rel="preload" href="/assets/hero.webp" as="image">
-<link rel="stylesheet" href="/style.css?v=7">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css?v=8">
 <script type="importmap">
 { "imports": {
   "three": "/vendor/three/three.module.js",
@@ -27,6 +30,7 @@
       <a href="#masalah">Ikhtisar</a>
       <a href="#lihat">3D</a>
       <a href="#cara">Cara kerja</a>
+      <a href="#uji">Hasil uji</a>
       <a href="#fitur">Fitur</a>
       <a href="#tim">Tim</a>
     </div>
@@ -111,6 +115,31 @@
   </div>
 </section>
 
+<section class="block" id="uji">
+  <p class="eyebrow reveal">Hasil uji</p>
+  <h2 class="big reveal">Diuji di lapangan.<br><span class="dim">Bukan cuma di meja.</span></h2>
+  <p class="lead reveal">Uji line-of-sight Field Node ke Command Node dengan enam konfigurasi radio LoRa: kombinasi spreading factor, bandwidth, dan daya pancar.</p>
+  <div class="uji-meta reveal"><span class="chip">Uji LOS · 25 November 2026</span><span class="chip">Field → Command</span><span class="chip">6 konfigurasi radio</span></div>
+
+  <div class="kpis">
+    <div class="kpi reveal"><div class="v">64,5<small>%</small></div><p>PDR tertinggi, pada SF10 · 125 kHz · 9 dBm (20 dari 31 paket).</p></div>
+    <div class="kpi red reveal"><div class="v">253<small>/ 524</small></div><p>Paket diterima Command dari seluruh paket yang tercatat terkirim.</p></div>
+    <div class="kpi reveal"><div class="v">0,10<small>s</small></div><p>Time on Air tercepat (SF7 · 125 kHz). SF12 butuh lebih dari 5 detik per paket.</p></div>
+  </div>
+
+  <div class="legend reveal" id="legend"></div>
+
+  <div class="charts">
+    <div class="chart reveal"><p class="k">Keandalan</p><h3>PDR per konfigurasi</h3><p class="why">Persentase paket dari Field yang sampai di Command.</p><div id="cPdr"></div><p class="note">Hanya TX dalam jendela log Command; perubahan lokasi dan interval tidak dikendalikan.</p></div>
+    <div class="chart reveal"><p class="k">Kecepatan</p><h3>Estimasi Time on Air</h3><p class="why">Waktu satu paket berada di udara. Makin besar SF, makin lama.</p><div id="cToa"></div><p class="note">Estimasi teoretis, bukan latency terukur; asumsi preamble 8, explicit header, CRC on, CR 4/5.</p></div>
+    <div class="chart reveal"><p class="k">Kuat sinyal</p><h3>Rata-rata RSSI paket diterima</h3><p class="why">Makin tinggi (mendekati 0 dBm), makin kuat sinyal yang diterima.</p><div id="cRssi"></div><p class="note">Hanya paket RX: paket yang hilang tidak memiliki nilai RSSI/SNR.</p></div>
+    <div class="chart reveal"><p class="k">Kualitas sinyal</p><h3>Rata-rata SNR paket diterima</h3><p class="why">Rasio sinyal terhadap derau. LoRa masih bisa menerima di bawah 0 dB.</p><div id="cSnr"></div><p class="note">Hanya paket RX: paket yang hilang tidak memiliki nilai RSSI/SNR.</p></div>
+    <div class="chart wide reveal"><p class="k">Sepanjang pengujian</p><h3>Perubahan keberhasilan penerimaan</h3><p class="why">PDR dihitung per jendela 3 menit dari 11:45 sampai 13:02.</p><div id="cTime"></div><p class="note">Angka nol pada jendela aktif menunjukkan tidak ada RX yang cocok. Jeda log diarsir. Nilai dibaca dari grafik hasil olah data tim.</p></div>
+    <div class="chart wide reveal"><p class="k">Sebaran</p><h3>Hubungan RSSI dan SNR</h3><p class="why">Setiap titik adalah satu paket yang berhasil diterima.</p><div class="pan"><img src="/assets/uji/rssi-snr.webp" alt="Scatter RSSI terhadap SNR per konfigurasi" loading="lazy"></div></div>
+    <div class="chart wide reveal"><p class="k">Lokasi</p><h3>RSSI vs perpindahan GPS Field</h3><p class="why">Perpindahan relatif dari posisi GPS Field pertama, bukan jarak antarnode.</p><div class="pan"><img src="/assets/uji/rssi-perpindahan.webp" alt="Scatter RSSI terhadap perpindahan GPS Field" loading="lazy"></div><p class="note">Garis putus: 500 m dari FIX awal (bukan posisi Command).</p></div>
+  </div>
+</section>
+
 <section class="block" id="fitur">
   <p class="eyebrow reveal">Fitur</p>
   <h2 class="big reveal">Dirancang untuk<br><span class="grad">respons darurat.</span></h2>
@@ -175,6 +204,7 @@
   <p>Teknik Elektro &amp; Teknik Komputer · Fakultas Teknik, Universitas Indonesia · 2026</p>
 </footer>
 
-<script type="module" src="/main.js?v=7"></script>
+<script type="module" src="/main.js?v=8"></script>
+<script src="/charts.js?v=8" defer></script>
 </body>
 </html>
