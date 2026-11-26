@@ -84,7 +84,7 @@ const cables = {};          // node -> {mesh, ant, ipex, base}
 const cableMat = new THREE.MeshStandardMaterial({ color: 0x1b1b1d, roughness: 0.45, metalness: 0.1 });
 const tmpBox = new THREE.Box3();
 
-loader.load('/assets/sarmesh.glb?v=4', gltf => {
+loader.load('/assets/sarmesh.glb?v=5', gltf => {
   const root = gltf.scene;
   scene.add(root);
   root.traverse(o => {
@@ -111,7 +111,7 @@ loader.load('/assets/sarmesh.glb?v=4', gltf => {
     });
   }
   // Two acts: the casing opens first, then the internals come out.
-  const isShell = n => /^(FieldCase|FieldBack|F_oled|F_bar|F_btn|RELAY_(tray|lid|usb)|COMMAND_(tray|lid|usb))/.test(n);
+  const isShell = n => /^(FieldCase|FieldBack|RELAY_(tray|lid)|COMMAND_(tray|lid))$/.test(n);
   for (const k of Object.keys(NODES)) {
     const shell = parts[k].filter(p => isShell(p.obj.name)), inner = parts[k].filter(p => !isShell(p.obj.name));
     const order = (arr, a0, span, len) => {
