@@ -84,7 +84,7 @@ const cables = {};          // node -> {mesh, ant, ipex, base}
 const cableMat = new THREE.MeshStandardMaterial({ color: 0x1b1b1d, roughness: 0.45, metalness: 0.1 });
 const tmpBox = new THREE.Box3();
 
-loader.load('/assets/sarmesh.glb?v=6', gltf => {
+loader.load('/assets/sarmesh.glb?v=7', gltf => {
   const root = gltf.scene;
   scene.add(root);
   root.traverse(o => {
@@ -131,12 +131,13 @@ loader.load('/assets/sarmesh.glb?v=6', gltf => {
     const am = ant.isMesh ? ant : ant.getObjectByProperty('isMesh', true);
     am.geometry.computeBoundingBox();
     const bb = am.geometry.boundingBox;
-    const base = new THREE.Vector3((bb.min.x + bb.max.x) / 2, bb.min.y, (bb.min.z + bb.max.z) / 2);
-    // base is at the lowest point along the antenna's up axis; pick the axis with the largest extent
+    // the antenna's long axis; its tail is whichever end sits lower in the world (assembled state)
     const size = bb.getSize(new THREE.Vector3());
     const ax = size.x > size.y && size.x > size.z ? 'x' : size.z > size.y ? 'z' : 'y';
-    base.set((bb.min.x + bb.max.x) / 2, (bb.min.y + bb.max.y) / 2, (bb.min.z + bb.max.z) / 2);
-    base[ax] = bb.min[ax];
+    const mid = bb.getCenter(new THREE.Vector3());
+    const e1 = mid.clone(), e2 = mid.clone(); e1[ax] = bb.min[ax]; e2[ax] = bb.max[ax];
+    const w1 = am.localToWorld(e1.clone()), w2 = am.localToWorld(e2.clone());
+    const base = w1.y < w2.y ? e1 : e2;
     const mesh = new THREE.Mesh(new THREE.BufferGeometry(), cableMat);
     mesh.castShadow = true; mesh.visible = false;
     mesh.userData = { label: 'Kabel antena IPEX', desc: 'Koaksial tipis dari antena ke konektor IPEX pada Ra-02' };
@@ -172,8 +173,9 @@ function updateCable(k, t) {
   _b.copy(c.base); c.ant.localToWorld(_b); g.worldToLocal(_b);   // antenna foot (group space, mm)
   c.ipex.getWorldPosition(_a); g.worldToLocal(_a);               // IPEX socket
   const L = _a.distanceTo(_b);
-  _c1.copy(_a); _c1.z += Math.max(6, L * 0.35);                  // leave the socket toward the front
-  _c2.copy(_b); _c2.y -= Math.max(8, L * 0.45);                  // drop straight down from the antenna
+  // group space is glTF-converted: Blender front (+z) = +y here, Blender up (+y) = -z here
+  _c1.copy(_a); _c1.y += Math.max(6, L * 0.35);                  // leave the socket toward the front
+  _c2.copy(_b); _c2.z += Math.max(8, L * 0.45);                  // hang straight down from the antenna tail
   const curve = new THREE.CubicBezierCurve3(_a.clone(), _c1.clone(), _c2.clone(), _b.clone());
   c.mesh.geometry.dispose();
   c.mesh.geometry = new THREE.TubeGeometry(curve, 48, 0.75, 8, false);
