@@ -57,7 +57,7 @@ const controls = new OrbitControls(camera, canvas);
 controls.enableDamping = true; controls.dampingFactor = 0.08;
 controls.enablePan = false;
 controls.minDistance = 0.12; controls.maxDistance = 1.1;
-controls.maxPolarAngle = Math.PI * 0.62;
+controls.minPolarAngle = 0; controls.maxPolarAngle = Math.PI;
 controls.rotateSpeed = 0.7; controls.zoomSpeed = 0.8;
 controls.autoRotate = true; controls.autoRotateSpeed = 0.6;
 
@@ -79,6 +79,9 @@ let current = 'FIELD';
 let explodeT = 0, explodeTarget = 0;
 let floorY = { FIELD: 0, RELAY: 0, COMMAND: 0 };
 let frames = {};            // node -> {center, dist0, dist1}
+const CABLES = { FIELD: ['F_ant', 'FI_ra02_m_ipex'], RELAY: ['RELAY_ant', 'RI_ra02_m_ipex'], COMMAND: ['COMMAND_ant', 'CI_ra02_m_ipex'] };
+const cables = {};          // node -> {mesh, ant, ipex, base}
+const cableMat = new THREE.MeshStandardMaterial({ color: 0x1b1b1d, roughness: 0.45, metalness: 0.1 });
 const tmpBox = new THREE.Box3();
 
 loader.load('/assets/sarmesh.glb', gltf => {
@@ -110,6 +113,24 @@ loader.load('/assets/sarmesh.glb', gltf => {
   }
   root.updateMatrixWorld(true);
   for (const k of Object.keys(NODES)) frames[k] = computeFrame(k);
+  for (const k of Object.keys(NODES)) {
+    const ant = root.getObjectByName(CABLES[k][0]), ipex = root.getObjectByName(CABLES[k][1]);
+    if (!ant || !ipex) continue;
+    const am = ant.isMesh ? ant : ant.getObjectByProperty('isMesh', true);
+    am.geometry.computeBoundingBox();
+    const bb = am.geometry.boundingBox;
+    const base = new THREE.Vector3((bb.min.x + bb.max.x) / 2, bb.min.y, (bb.min.z + bb.max.z) / 2);
+    // base is at the lowest point along the antenna's up axis; pick the axis with the largest extent
+    const size = bb.getSize(new THREE.Vector3());
+    const ax = size.x > size.y && size.x > size.z ? 'x' : size.z > size.y ? 'z' : 'y';
+    base.set((bb.min.x + bb.max.x) / 2, (bb.min.y + bb.max.y) / 2, (bb.min.z + bb.max.z) / 2);
+    base[ax] = bb.min[ax];
+    const mesh = new THREE.Mesh(new THREE.BufferGeometry(), cableMat);
+    mesh.castShadow = true; mesh.visible = false;
+    mesh.userData = { label: 'Kabel antena IPEX', desc: 'Koaksial tipis dari antena ke konektor IPEX pada Ra-02' };
+    groups[k].add(mesh);
+    cables[k] = { mesh, ant: am, ipex, base };
+  }
   showNode('FIELD', true);
   document.getElementById('loader').classList.add('done');
 }, xhr => {
@@ -129,6 +150,23 @@ function setExplode(k, t, opening = true) {
     const local = Math.min(1, Math.max(0, (t - d) / (1 - STAG)));
     p.obj.position.lerpVectors(p.p0, p.p1, easeIO(local));
   }
+  updateCable(k, t);
+}
+const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _c1 = new THREE.Vector3(), _c2 = new THREE.Vector3();
+function updateCable(k, t) {
+  const c = cables[k]; if (!c) return;
+  c.mesh.visible = t > 0.02 && groups[k].visible;
+  if (!c.mesh.visible) return;
+  const g = groups[k];
+  g.updateMatrixWorld(true);
+  _b.copy(c.base); c.ant.localToWorld(_b); g.worldToLocal(_b);   // antenna foot (group space, mm)
+  c.ipex.getWorldPosition(_a); g.worldToLocal(_a);               // IPEX socket
+  const L = _a.distanceTo(_b);
+  _c1.copy(_a); _c1.z += Math.max(6, L * 0.35);                  // leave the socket toward the front
+  _c2.copy(_b); _c2.y -= Math.max(8, L * 0.45);                  // drop straight down from the antenna
+  const curve = new THREE.CubicBezierCurve3(_a.clone(), _c1.clone(), _c2.clone(), _b.clone());
+  c.mesh.geometry.dispose();
+  c.mesh.geometry = new THREE.TubeGeometry(curve, 48, 0.75, 8, false);
 }
 function computeFrame(k) {
   const g = groups[k];
@@ -170,6 +208,7 @@ function showNode(k, instant) {
   for (const n of Object.keys(groups)) groups[n].visible = n === k;
   // reset explode of others
   for (const n of Object.keys(groups)) if (n !== k) setExplode(n, 0);
+  for (const n of Object.keys(cables)) cables[n].mesh.visible = false;
   explodeT = explodeTarget; setExplode(k, explodeT);
   floor.position.y = frames[k].minY - 0.0005;
   key.target.position.copy(frames[k].c0);

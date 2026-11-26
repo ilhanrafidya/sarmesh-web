@@ -43,8 +43,14 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .lnk{color:var(--blue)}
 .lnk:hover{text-decoration:underline}
 .hero-img{max-width:1200px;margin:10px auto 0;position:relative}
-.hero-img img{width:100%;display:block;-webkit-mask-image:radial-gradient(ellipse 62% 70% at 50% 50%,#000 60%,transparent 100%);mask-image:radial-gradient(ellipse 62% 70% at 50% 50%,#000 60%,transparent 100%)}
-.hero-names{display:flex;justify-content:center;gap:clamp(60px,14vw,190px);font-size:15px;color:var(--dim);margin-top:-30px;letter-spacing:.02em}
+.hero-img img{width:100%;display:block;
+  -webkit-mask-image:linear-gradient(to bottom,#000 71%,rgba(0,0,0,.4) 80%,transparent 92%),linear-gradient(to right,transparent 0,#000 12%,#000 88%,transparent 100%);
+  -webkit-mask-composite:source-in;
+  mask-image:linear-gradient(to bottom,#000 71%,rgba(0,0,0,.4) 80%,transparent 92%),linear-gradient(to right,transparent 0,#000 12%,#000 88%,transparent 100%);
+  mask-composite:intersect}
+.hero-names{display:flex;justify-content:center;gap:clamp(60px,14vw,190px);font-size:15px;color:var(--dim);margin-top:-6%;position:relative;letter-spacing:.02em}
+.made{display:inline-flex;align-items:center;gap:8px;margin-top:34px;padding:7px 14px;border:1px solid var(--line);border-radius:980px;font-size:13px;color:#a1a1a6;letter-spacing:0}
+.made i{width:7px;height:7px;border-radius:50%;background:#f5792a;box-shadow:0 0 10px #f5792a88}
 .hero-img.reveal{transform:scale(.94) translateY(30px);transition-duration:1.6s}
 .hero-img.reveal.in{transform:none}
 
@@ -145,4 +151,4 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .foot{max-width:1024px;margin:150px auto 0;padding:26px 22px 40px;border-top:1px solid var(--line);color:#6e6e73;font-size:12.5px;line-height:1.8}
 
 @media (prefers-reduced-motion:reduce){.reveal{opacity:1;transform:none;transition:none}html{scroll-behavior:auto}}
-@media (max-width:720px){.hero-names{margin-top:6px;gap:0;justify-content:space-around;font-size:13px}}
+@media (max-width:720px){.hero-names{margin-top:-8%;gap:0;justify-content:space-around;font-size:13px}.made{font-size:12px}}
