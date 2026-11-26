@@ -84,7 +84,7 @@ const cables = {};          // node -> {mesh, ant, ipex, base}
 const cableMat = new THREE.MeshStandardMaterial({ color: 0x1b1b1d, roughness: 0.45, metalness: 0.1 });
 const tmpBox = new THREE.Box3();
 
-loader.load('/assets/sarmesh.glb', gltf => {
+loader.load('/assets/sarmesh.glb?v=4', gltf => {
   const root = gltf.scene;
   scene.add(root);
   root.traverse(o => {
@@ -99,17 +99,27 @@ loader.load('/assets/sarmesh.glb', gltf => {
     groups[k] = g;
     parts[k] = [];
     g.traverse(o => {
-      const e = o.userData && o.userData.explode;
+      let e = o.userData && o.userData.explode;
       if (!e) return;
+      // Relay/Command: the box is open at the back, so the lid comes off backwards,
+      // the shell slides forward and the boards stay between them (nothing passes through a wall).
+      const OV = { lid: [0, 0, -135], tray: [0, 0, 85], usb: [0, 0, 85], bolt: [0, 0, -92], perf: [0, 0, -52], ra02: [0, 0, -24], esp: [0, 0, -8] };
+      if (k !== 'FIELD') { const m = o.name.match(/^(?:RELAY|COMMAND|RI|CI)_(lid|tray|usb|bolt|perf|ra02|esp)$/); if (m) e = OV[m[1]]; }
       // Blender local (x,y,z) -> glTF local (x, z, -y); values are in mm (parent space)
       const d = new THREE.Vector3(e[0], e[2], -e[1]);
       parts[k].push({ obj: o, p0: o.position.clone(), p1: o.position.clone().add(d) });
     });
   }
+  // Two acts: the casing opens first, then the internals come out.
+  const isShell = n => /^(FieldCase|FieldBack|F_oled|F_bar|F_btn|RELAY_(tray|lid|usb)|COMMAND_(tray|lid|usb))/.test(n);
   for (const k of Object.keys(NODES)) {
-    const mags = parts[k].map(p => p.p1.distanceTo(p.p0));
-    const mx = Math.max(...mags) || 1;
-    parts[k].forEach((p, i) => { p.delay = (mags[i] / mx); });
+    const shell = parts[k].filter(p => isShell(p.obj.name)), inner = parts[k].filter(p => !isShell(p.obj.name));
+    const order = (arr, a0, span, len) => {
+      const mags = arr.map(p => p.p1.distanceTo(p.p0)); const mx = Math.max(...mags, 1);
+      arr.forEach((p, i) => { p.a = a0 + (1 - mags[i] / mx) * span; p.b = p.a + len; });
+    };
+    order(shell, 0.0, 0.12, 0.38);
+    order(inner, 0.42, 0.22, 0.36);
   }
   root.updateMatrixWorld(true);
   for (const k of Object.keys(NODES)) frames[k] = computeFrame(k);
@@ -142,12 +152,10 @@ loader.load('/assets/sarmesh.glb', gltf => {
 
 // t in 0..1 (linear time). Each part gets its own eased window so layers
 // peel off one after another; t=0 and t=1 are exact endpoints.
-const STAG = 0.35;
 const easeIO = x => x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
-function setExplode(k, t, opening = true) {
+function setExplode(k, t) {
   for (const p of parts[k]) {
-    const d = (opening ? (1 - p.delay) : p.delay) * STAG;
-    const local = Math.min(1, Math.max(0, (t - d) / (1 - STAG)));
+    const local = p.a === undefined ? t : Math.min(1, Math.max(0, (t - p.a) / (p.b - p.a)));
     p.obj.position.lerpVectors(p.p0, p.p1, easeIO(local));
   }
   updateCable(k, t);
@@ -324,9 +332,9 @@ function tick(now) {
   if (!visible) return;
   if (groups.FIELD && explodeT !== explodeTarget) {
     const dt = Math.min(0.1, (now - (tick.last || now)) / 1000);
-    const step = dt / 1.7; // full open/close in ~1.7 s
+    const step = dt / 2.4; // full open/close in ~2.4 s
     explodeT = explodeTarget > explodeT ? Math.min(1, explodeT + step) : Math.max(0, explodeT - step);
-    setExplode(current, explodeT, explodeTarget === 1);
+    setExplode(current, explodeT);
   }
   tick.last = now;
   if (camTween) {
