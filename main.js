@@ -84,7 +84,7 @@ const cables = {};          // node -> {mesh, ant, ipex, base}
 const cableMat = new THREE.MeshStandardMaterial({ color: 0x1b1b1d, roughness: 0.45, metalness: 0.1 });
 const tmpBox = new THREE.Box3();
 
-loader.load('/assets/sarmesh.glb?v=5', gltf => {
+loader.load('/assets/sarmesh.glb?v=6', gltf => {
   const root = gltf.scene;
   scene.add(root);
   root.traverse(o => {
@@ -94,6 +94,8 @@ loader.load('/assets/sarmesh.glb?v=5', gltf => {
       if (m && m.map) m.map.anisotropy = renderer.capabilities.getMaxAnisotropy();
     }
   });
+  // TP4056: sit its USB-C a bit lower so it lines up with the second hole in the printed case
+  const tp = root.getObjectByName('FI_tp'); if (tp) tp.position.y -= 2.3;
   for (const k of Object.keys(NODES)) {
     const g = root.getObjectByName(k);
     groups[k] = g;
